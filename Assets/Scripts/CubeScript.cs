@@ -18,11 +18,8 @@ public class CubeScript : MonoBehaviour {
 			RaycastHit hit;
 			Debug.Log("Ray check");
 			if (Physics.Raycast (ray, out hit, distance)){
-				Vector3 toque = Vector3.Cross(hit.point - rigidbody.centerOfMass,ray.direction * force);
-				dir2 = toque;
-				rigidbody.AddTorque(toque,ForceMode.Impulse);/*
-				Debug.Log("Ray hit");
-				rigidbody.AddForce(ray.direction *force);*/
+				Vector3 rayForce = (force* ray.direction.normalized);
+				rigidbody.AddForceAtPosition(rayForce, hit.point, ForceMode.Impulse);
 			}
 		}
 	}

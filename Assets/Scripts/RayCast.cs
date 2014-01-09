@@ -18,7 +18,7 @@ public class RayCast : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {/*
+	void Update () {
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 		RaycastHit hit;
 		if (Physics.Raycast (ray, out hit, distance)){
@@ -31,7 +31,7 @@ public class RayCast : MonoBehaviour {
 				line.SetPosition(0, transform.position);
 				line.SetPosition(1, hit.point + hit.normal);
 			}
-		}*/
+		}
 	}
 	void OnGUI () {
 		string temp = "(" + loc.x.ToString("0.00") + ", " + loc.y.ToString("0.00") + ", " + loc.z.ToString("0.00") + ")";
