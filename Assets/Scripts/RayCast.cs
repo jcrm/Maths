@@ -17,7 +17,9 @@ public class RayCast : MonoBehaviour {
 		line = GetComponent<LineRenderer>();
 		line.SetVertexCount(2);
 		line.renderer.material = lineMaterial;
-		line.SetWidth(0.1f, 0.25f);
+		line.SetWidth(0.1f, 0.1f);
+		Screen.lockCursor = true;
+		Screen.showCursor = false;
 	}
 	
 	// Update is called once per frame

@@ -2,66 +2,72 @@
 using System.Collections;
 
 public class CubeScript : MonoBehaviour {
-	public float distance = 50f;
 	public float force;
+	private float distance = 50f;
 	private Vector3 centreOfMass;
 	private Vector3 angularVelocity;
 	private Vector3 pointOfForce;
 	private Vector3 dirOfForce;
 	private Vector3[] points = new Vector3[8];
-	public float counter;
-	public float countUp = 0.0f; 
-	bool count = true;
-	bool changeAng = false;
-	int sscounter = 0;
-	string path = "ScreenshotAuto.png";
-	bool pressed = false;
+	private float countUp = 0.0f; 
+	private float maxTimer = 0.5f;
+	private bool isTimerOn = false;
+	private bool hasAngVeloChanged = false;
+	private int screenshotCounter = 0;
+	private string filename = "ScreenshotAuto.png";
+	private bool isPressed = false;
 	// Use this for initialization
 	void Start () {
-		points[0] = collider.bounds.min;
-		points[1] = collider.bounds.max;
-		points[2] = new Vector3(points[0].x, points[0].y, points[1].z);
-		points[3] = new Vector3(points[0].x, points[1].y, points[0].z);
-		points[4] = new Vector3(points[1].x, points[0].y, points[0].z);
-		points[5] = new Vector3(points[0].x, points[1].y, points[1].z);
-		points[6] = new Vector3(points[1].x, points[0].y, points[1].z);
-		points[7] = new Vector3(points[1].x, points[1].y, points[0].z);
+		calcCorners ();
 	}
 
 	// Update is called once per frame
 	void Update () {
-		if (Input.GetMouseButton (0) && pressed == false){
-			count = false;;
+		//Check to see if the mouse has been clicked and it the first time.
+		if (Input.GetMouseButton (0) && isPressed == false){
+			//Cast a Ray forwards and check to see if it hits the object.
 			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 			RaycastHit hit;
+			//If the ray hits and object initalise the variables.
 			if (Physics.Raycast (ray, out hit, distance)){
-				pressed = true;
+				//Start the timer and disable pressing the mouse button again.
+				isTimerOn = true;
+				isPressed = true;
+				//Calculate the force * direction of force.
 				Vector3 rayForce = (force* ray.direction);
+				//Add force to force at a particular location on object. Use Impulse so its an insantenous force.
 				rigidbody.AddForceAtPosition(rayForce, hit.point, ForceMode.Impulse);
+				//Collect direction of force and the position the force hits.
 				dirOfForce = ray.direction;
 				pointOfForce = hit.point;
+				centreOfMass = collider.bounds.center;
+				//Output a screenshot.
 				takeScreenShot();
 			}
 		}
+		//Store the latest angular velocity vector
 		angularVelocity = rigidbody.angularVelocity;
-		if (changeAng == false) {
+		//Check to see if the angular velocity has changed
+		if (hasAngVeloChanged == false) {
 			if(rigidbody.angularVelocity.x != 0 || rigidbody.angularVelocity.y != 0 ||rigidbody.angularVelocity.z != 0 ){
+				//Store the latest angular velocity vector
 				angularVelocity = rigidbody.angularVelocity;
-				changeAng = true;
+				hasAngVeloChanged = true;
+				calcCorners();
 				takeScreenShot();
 			}
 		}
-		if (counter <= 0.0f && count == false) {
-			centreOfMass = collider.bounds.center;
-			count = true;
-			rigidbody.velocity = Vector3.zero;
-			rigidbody.isKinematic = true;
-			calcCorners();
-			takeScreenShot();
-		}
-		if (count == false) {
-			counter -= Time.deltaTime;
-			countUp += Time.deltaTime;
+		if (isTimerOn == true) {
+			if (countUp >= maxTimer) {
+				centreOfMass = collider.bounds.center;
+				isTimerOn = false;
+				rigidbody.velocity = Vector3.zero;
+				rigidbody.isKinematic = true;
+				calcCorners();
+				takeScreenShot();
+			}else{
+				countUp += Time.deltaTime;
+			}
 		}
 	}
 	void OnGUI () {
@@ -86,9 +92,9 @@ public class CubeScript : MonoBehaviour {
 		GUI.Label(new Rect (0, sHeight/4, sWidth, (sHeight/4)*3), temp, style);
 	}
 	void takeScreenShot(){
-		sscounter++;
-		path = "ScreenshotAuto"+ sscounter.ToString() + ".png";
-		Application.CaptureScreenshot(path);
+		screenshotCounter++;
+		filename = "ScreenshotAuto"+ screenshotCounter.ToString() + ".png";
+		Application.CaptureScreenshot(filename);
 	}
 	string printCorners(){
 		string temp = "";
