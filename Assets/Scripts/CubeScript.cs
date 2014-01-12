@@ -6,6 +6,7 @@ public class CubeScript : MonoBehaviour {
 	private float distance = 50f;
 	private Vector3 centreOfMass;
 	private Vector3 angularVelocity;
+	private Vector3 momentOfInertia;
 	private Vector3 pointOfForce;
 	private Vector3 dirOfForce;
 	private Vector3[] points = new Vector3[8];
@@ -41,7 +42,8 @@ public class CubeScript : MonoBehaviour {
 				//Collect direction of force and the position the force hits.
 				dirOfForce = ray.direction;
 				pointOfForce = hit.point;
-				centreOfMass = transform.TransformPoint(rigidbody.centerOfMass);
+				momentOfInertia = rigidbody.inertiaTensor;
+				calcCorners();
 				//Output a screenshot.
 				takeScreenShot();
 			}
@@ -53,6 +55,7 @@ public class CubeScript : MonoBehaviour {
 				angularVelocity = rigidbody.angularVelocity;
 				//Set boolean to true
 				hasAngVeloChanged = true;
+				momentOfInertia = rigidbody.inertiaTensor;
 				//Calculate the Corners
 				calcCorners();
 				//Take a screenshot
@@ -63,13 +66,12 @@ public class CubeScript : MonoBehaviour {
 		if (isTimerOn == true) {
 			//if the timer is larger than the max time turn of the timer
 			if (countUp >= maxTimer) {
-				//update the centr of mass varible to be displayed later
-				centreOfMass = transform.TransformPoint(rigidbody.centerOfMass);
 				//turn timer off
 				isTimerOn = false;
 				//stop the cube rotating
 				rigidbody.velocity = Vector3.zero;
 				rigidbody.isKinematic = true;
+				momentOfInertia = rigidbody.inertiaTensor;
 				//claculate the corners to be displayed on screen
 				calcCorners();
 				//take a screen shot
@@ -97,16 +99,18 @@ public class CubeScript : MonoBehaviour {
 		style.normal.textColor = Color.black;
 		style.fontSize = 20;
 		//create string of text for the centre of mass and fill it with relevant data
-		string temp ="Centre of Mass" + "(" + centreOfMass.x.ToString("0.00") + ", " + centreOfMass.y.ToString("0.00") + ", " + centreOfMass.z.ToString("0.00") + ")";
+		string temp = printVector("Centre of Mass", centreOfMass);
 		GUI.Label(new Rect (0, 0, sWidth, tHeight), temp, style);
 		//update temp string with angular velocity data
-		temp ="Angular Velocity" + "(" + angularVelocity.x.ToString("0.00") + ", " + angularVelocity.y.ToString("0.00") + ", " + angularVelocity.z.ToString("0.00") + ")";
+		temp = printVector("Angular Velocity", angularVelocity);
 		GUI.Label(new Rect (sWidth-tWidth-50, 0, tWidth+50, tHeight), temp, style);
+		temp = printVector("MOI:", momentOfInertia);
+		GUI.Label(new Rect (sWidth-tWidth-50, tHeight*2, tWidth+50, tHeight), temp, style);
 		//update temp string with hit location data
-		temp = "Hitpoint" + "(" + pointOfForce.x.ToString("0.00") + ", " + pointOfForce.y.ToString("0.00") + ", " + pointOfForce.z.ToString("0.00") + ")";
+		temp = printVector("Hitpoint", pointOfForce);
 		GUI.Label(new Rect (0, sHeight-tHeight, tWidth, tHeight), temp, style);
 		//update string with the force direction vector
-		temp = "DirForce" + "(" + dirOfForce.x.ToString("0.00") + ", " + dirOfForce.y.ToString("0.00") + ", " + dirOfForce.z.ToString("0.00") + ")";
+		temp = printVector("DirForce", dirOfForce);
 		GUI.Label(new Rect (sWidth-tWidth, sHeight-tHeight, tWidth, tHeight), temp, style);
 		//update emp string with force, time, and mass variables
 		temp = "Time: " + countUp.ToString() + "\tForce: " + force.ToString() + "\n Mass: " + rigidbody.mass.ToString();
@@ -129,7 +133,16 @@ public class CubeScript : MonoBehaviour {
 		}
 		return temp;
 	}
+	string printVector(string name, Vector3 vect){
+		string temp = name + "(";
+		temp += vect.x.ToString("0.00") + ", ";
+		temp += vect.y.ToString("0.00") + ", ";
+		temp += vect.z.ToString("0.00") + ")";
+		return temp;
+	}
 	void calcCorners(){
+		//update the centr of mass varible to be displayed later
+		centreOfMass = rigidbody.centerOfMass;
 		//work out where the corners of the obejct is.
 		Mesh mesh = GetComponent<MeshFilter>().mesh;
 		Vector3[] vertices = mesh.vertices;
